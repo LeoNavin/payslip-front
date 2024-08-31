@@ -24,13 +24,14 @@ jobs:
       run: |
         rm -rf node_modules package-lock.json
         npm install --legacy-peer-deps
+        npm run build
 
     # Build the site in the jekyll/builder container
     - name: Build the Jekyll site
       run: |
         docker run \
         -v ${{ github.workspace }}:/srv/jekyll \
-        -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
+        -v ${{ github.workspace }}/build:/srv/jekyll/build \
         jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
 
     # Start the application using npm
