@@ -19,13 +19,13 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '18.x'  # Specify your Node.js version here
+        node-version: '18.x'
 
     - name: Install dependencies
-      run: npm install --force
+      run: npm install --legacy-peer-deps
 
     - name: Run tests
-      run: npm test -- --watchAll=false
+      run: npm test -- --watchAll=false --detectOpenHandles
 
     - name: Build project
       run: npm run build
