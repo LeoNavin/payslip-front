@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Build and Test
 
 on:
   push:
@@ -13,51 +13,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18.x'  # Specify your Node.js version here
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
 
-    - name: Cache Node.js modules
-      uses: actions/cache@v3
-      with:
-        path: |
-          node_modules
-          package-lock.json
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-    - name: Clean npm cache
-      run: npm cache clean --force
+      - name: Clean npm cache
+        run: npm cache clean --force
 
-    - name: Remove node_modules and package-lock.json
-      run: |
-        rm -rf node_modules
-        rm -f package-lock.json
+      - name: Remove node_modules and package-lock
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
 
-    - name: Install dependencies
-      run: npm install --legacy-peer-deps
+      - name: Install dependencies
+        run: npm install
 
-    - name: Print Node.js version
-      run: node --version
+      - name: Run tests
+        run: npm test -- --watchAll=false
 
-    - name: Print npm version
-      run: npm --version
-
-    - name: Print installed packages
-      run: npm list --depth=0
-
-    - name: Build project
-      run: npm run build --verbose
-      
-    - name: Deploy to Vercel
-      env:
-        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      run: |
-        npm install -g vercel
-        vercel deploy --prod --token $VERCEL_TOKEN
+      - name: Build project
+        run: npm run build --verbose
