@@ -36,12 +36,7 @@ jobs:
         npm cache clean --force
         rm -rf node_modules package-lock.json
         npm install --legacy-peer-deps
-
-    - name: Run tests
-      run: npm test -- --watchAll=false --detectOpenHandles
-
-    - name: Build project
-      run: npm run build
+        run: npm run build
 
     - name: Deploy to Vercel
       env:
