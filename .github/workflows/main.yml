@@ -22,7 +22,7 @@ jobs:
         node-version: '18.x'  # Specify your Node.js version here
 
     - name: Install dependencies
-      run: npm install
+      run: npm install --force
 
     - name: Run tests
       run: npm test -- --watchAll=false
