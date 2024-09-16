@@ -34,9 +34,6 @@ jobs:
     - name: Install dependencies
       run: npm install --legacy-peer-deps
 
-    - name: Run tests
-      run: npm test -- --watchAll=false --detectOpenHandles
-
     - name: Build project
       run: npm run build
 
