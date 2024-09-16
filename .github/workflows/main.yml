@@ -19,7 +19,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '16.16.0'  # Specify your Node.js version here
+        node-version: '18.x'  # Specify your Node.js version here
 
     - name: Cache Node.js modules
       uses: actions/cache@v3
@@ -31,13 +31,29 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-node-
 
-    - name: Install dependencies
-      run: |
-        npm cache clean --force
-        rm -rf node_modules package-lock.json
-        npm install --legacy-peer-deps
-        run: npm run build
+    - name: Clean npm cache
+      run: npm cache clean --force
 
+    - name: Remove node_modules and package-lock.json
+      run: |
+        rm -rf node_modules
+        rm -f package-lock.json
+
+    - name: Install dependencies
+      run: npm install --legacy-peer-deps
+
+    - name: Print Node.js version
+      run: node --version
+
+    - name: Print npm version
+      run: npm --version
+
+    - name: Print installed packages
+      run: npm list --depth=0
+
+    - name: Build project
+      run: npm run build --verbose
+      
     - name: Deploy to Vercel
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
