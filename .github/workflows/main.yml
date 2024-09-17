@@ -13,14 +13,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Set up Node.js version (e.g., 18.x)
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
 
+      # Step 3: Cache node modules (optional for performance)
       - name: Cache node modules
         uses: actions/cache@v3
         with:
@@ -31,19 +34,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Clean npm cache
-        run: npm cache clean --force
-
-      - name: Remove node_modules and package-lock
-        run: |
-          rm -rf node_modules
-          rm -f package-lock.json
-
+      # Step 4: Install project dependencies
       - name: Install dependencies
         run: npm install
 
+      # Step 5: Run tests (optional, remove if not needed)
       - name: Run tests
         run: npm test -- --watchAll=false
 
+      # Step 6: Build the project using the "build" script in package.json
       - name: Build project
-        run: npm run build --verbose
+        run: npm run build
+
+      # Optional: Step to upload build artifacts (for use in other workflows or steps)
+      - name: Upload build artifacts
+        if: success() # This will only run if the build is successful
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build/
