@@ -1,55 +1,41 @@
-name: Build and Test
+name: Deploy to Vercel
 
 on:
+  workflow_dispatch:  # Allows manual triggering of this workflow
   push:
+    paths:
+      - 'frontend/**'
     branches:
-      - main
+      - dev
+    tags:
+      - v*
+
   pull_request:
-    branches:
-      - main
+    paths:
+      - 'frontend/**'
 
 jobs:
-  build:
+  deploy:
+    name: Deploy to Vercel
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout the code
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
-      # Step 2: Set up Node.js version (e.g., 18.x)
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: '16.16.0'
 
-      # Step 3: Cache node modules (optional for performance)
-      - name: Cache node modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.npm
-            node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      # Step 4: Install project dependencies
       - name: Install dependencies
-        run: npm install
+        run: npm install --force
 
-      # Step 5: Run tests (optional, remove if not needed)
-      - name: Run tests
-        run: npm test -- --watchAll=false
-
-      # Step 6: Build the project using the "build" script in package.json
       - name: Build project
-        run: npm run build
+        run: npm run build --force --prefix frontend
 
-      # Optional: Step to upload build artifacts (for use in other workflows or steps)
-      - name: Upload build artifacts
-        if: success() # This will only run if the build is successful
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: build/
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          vercel --token $VERCEL_TOKEN --project $VERCEL_PROJECT_ID --confirm --prod
