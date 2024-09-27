@@ -1,4 +1,4 @@
-name: Deploy to Vercel
+name: Build Project
 
 on:
   workflow_dispatch:
@@ -10,13 +10,9 @@ on:
     tags:
       - v*
 
-  pull_request:
-    paths:
-      - 'frontend/**'
-
 jobs:
-  deploy:
-    name: Deploy to Vercel
+  build:
+    name: Build Project
     runs-on: ubuntu-latest
 
     steps:
@@ -28,18 +24,16 @@ jobs:
         with:
           node-version: '16.16.0'
 
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules  # Cache the node_modules folder
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}  # Unique key for this commit's package-lock.json
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
-        run: npm install --legacy-peer-deps  # Allows bypassing peer dependency conflicts
+        run: npm ci  # Ensure a clean install based on package-lock.json
 
       - name: Build project
         run: npm run build --prefix frontend
-
-      - name: Install Vercel CLI
-        run: npm install -g vercel
-
-      - name: Deploy to Vercel
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          vercel --token $VERCEL_TOKEN --project $VERCEL_PROJECT_ID --confirm --prod
