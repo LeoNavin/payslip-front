@@ -1,23 +1,20 @@
 # Use an official Node.js runtime as a parent image
-FROM node:18
+FROM node:16
 
 # Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY frontend/package*.json ./
+# Copy the package.json and package-lock.json files
+COPY package*.json ./
 
-# Install dependencies
-RUN npm install
+# Install the dependencies
+RUN npm ci
 
 # Copy the rest of the application code
-COPY frontend ./
+COPY . .
 
-# Build the application
+# Build the project
 RUN npm run build
 
-# Install Vercel CLI
-RUN npm install -g vercel
-
-# Set the default command to execute when the container starts
-CMD ["vercel", "--token", "${VERCEL_TOKEN}", "--project", "${VERCEL_PROJECT_ID}", "--confirm", "--prod"]
+# Start the application (optional, if you want to run it in the container)
+CMD ["npm", "start"]
