@@ -1,39 +1,43 @@
-name: Build Project
+name: Deploy to Vercel
 
 on:
   workflow_dispatch:
   push:
-    paths:
-      - 'frontend/**'
     branches:
       - dev
-    tags:
-      - v*
+  pull_request:
+    branches:
+      - dev
 
 jobs:
-  build:
-    name: Build Project
+  deploy:
+    name: Deploy to Vercel
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16.16.0'
+      - name: Build Docker image
+        run: |
+          docker build -t my-app .
 
-      - name: Cache node_modules
-        uses: actions/cache@v3
-        with:
-          path: node_modules  # Cache the node_modules folder
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}  # Unique key for this commit's package-lock.json
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Run Docker container
+        run: |
+          docker run --name my-app-container -d my-app
 
-      - name: Install dependencies
-        run: npm ci  # Ensure a clean install based on package-lock.json
+      - name: Install Vercel CLI
+        run: |
+          docker exec my-app-container npm install -g vercel
 
-      - name: Build project
-        run: npm run build --prefix frontend
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          docker exec my-app-container vercel --token $VERCEL_TOKEN --project $VERCEL_PROJECT_ID --confirm --prod
+
+      - name: Stop and remove the Docker container
+        run: |
+          docker stop my-app-container
+          docker rm my-app-container
